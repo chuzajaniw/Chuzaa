@@ -272,10 +272,17 @@ function onBot({ models: botModel }) {
                 }
             }()
         logger.loader(global.getText('priyansh', 'finishLoadModule', global.client.commands.size, global.client.events.size)) 
-        logger.loader(`Startup Time: ${((Date.now() - global.client.timeStart) / 1000).toFixed()}s`)   
+        logger.loader(`Bot ${process.env.BOT_ID || 'Default'} Startup Time: ${((Date.now() - global.client.timeStart) / 1000).toFixed()}s`)   
         logger.loader('===== [ ' + (Date.now() - global.client.timeStart) + 'ms ] =====')
-        writeFileSync(global.client['configPath'], JSON['stringify'](global.config, null, 4), 'utf8') 
-        unlinkSync(global['client']['configPath'] + '.temp');        
+        
+        // Use custom config path if provided
+        const configPath = process.env.CONFIG_PATH || global.client['configPath'];
+        writeFileSync(configPath, JSON['stringify'](global.config, null, 4), 'utf8') 
+        
+        if (fs.existsSync(global['client']['configPath'] + '.temp')) {
+            unlinkSync(global['client']['configPath'] + '.temp');
+        }
+        
         const listenerData = {};
         listenerData.api = loginApiData; 
         listenerData.models = botModel;
