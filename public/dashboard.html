@@ -95,9 +95,17 @@
                 <!-- Header -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2 class="text-white">Welcome, <span id="username"></span></h2>
-                    <button class="btn btn-success" onclick="showCreateBotModal()">
-                        <i class="fas fa-plus me-2"></i>Add New Bot
-                    </button>
+                    <div>
+                        <button class="btn btn-success me-2" onclick="startAllBots()">
+                            <i class="fas fa-play me-2"></i>Start All Bots
+                        </button>
+                        <button class="btn btn-warning me-2" onclick="stopAllBots()">
+                            <i class="fas fa-stop me-2"></i>Stop All Bots
+                        </button>
+                        <button class="btn btn-primary" onclick="showCreateBotModal()">
+                            <i class="fas fa-plus me-2"></i>Add New Bot
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Bots Section -->
@@ -132,6 +140,10 @@
                                 <p><strong>Total Bots:</strong> <span id="totalBots">0</span></p>
                                 <p><strong>Running Bots:</strong> <span id="runningBots">0</span></p>
                             </div>
+                            <hr class="bg-white">
+                            <button class="btn btn-primary" onclick="showChangePasswordModal()">
+                                <i class="fas fa-key me-2"></i>Change Password
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -203,6 +215,38 @@
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" onclick="updateBot()">Update Bot</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2);">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title text-white">Change Password</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="changePasswordForm">
+                        <div class="mb-3">
+                            <label class="form-label text-white">Current Password</label>
+                            <input type="password" class="form-control" id="currentPassword" required style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: white;">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-white">New Password</label>
+                            <input type="password" class="form-control" id="newPassword" required style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: white;">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-white">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirmNewPassword" required style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: white;">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="changePassword()">Change Password</button>
                 </div>
             </div>
         </div>
@@ -294,9 +338,11 @@
                                 </div>
                                 <p class="text-white-50 mb-2"><strong>Prefix:</strong> ${bot.prefix}</p>
                                 <p class="text-white-50 mb-2"><strong>Admin ID:</strong> ${bot.adminId}</p>
-                                <p class="text-white-50 mb-3"><strong>Status:</strong> <span class="${statusClass}">${bot.status}</span></p>
+                                <p class="text-white-50 mb-2"><strong>Bot ID:</strong> ${bot.botId}</p>
+                                <p class="text-white-50 mb-2"><strong>Status:</strong> <span class="${statusClass}">${bot.status}</span></p>
+                                ${bot.pid ? `<p class="text-white-50 mb-3"><small>PID: ${bot.pid}</small></p>` : ''}
                                 
-                                <div class="btn-group w-100" role="group">
+                                <div class="btn-group w-100 mb-2" role="group">
                                     ${bot.status === 'running' ? 
                                         `<button class="btn btn-danger btn-sm" onclick="stopBot('${bot.id}')">
                                             <i class="fas fa-stop"></i>
@@ -312,6 +358,7 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
+                                <small class="text-white-50">Created: ${new Date(bot.createdAt).toLocaleDateString()}</small>
                             </div>
                         </div>
                     </div>
@@ -499,6 +546,90 @@
                 } catch (error) {
                     alert('An error occurred while deleting the bot.');
                 }
+            }
+        }
+
+        async function startAllBots() {
+            if (confirm('Are you sure you want to start all bots?')) {
+                try {
+                    const response = await fetch('/api/bot/start-all', {
+                        method: 'POST'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        await loadUserData();
+                        alert(result.message + (result.errors ? '\n\nErrors:\n' + result.errors.join('\n') : ''));
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('An error occurred while starting all bots.');
+                }
+            }
+        }
+
+        async function stopAllBots() {
+            if (confirm('Are you sure you want to stop all running bots?')) {
+                try {
+                    const response = await fetch('/api/bot/stop-all', {
+                        method: 'POST'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        await loadUserData();
+                        alert(result.message);
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('An error occurred while stopping all bots.');
+                }
+            }
+        }
+
+        function showChangePasswordModal() {
+            new bootstrap.Modal(document.getElementById('changePasswordModal')).show();
+        }
+
+        async function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+            
+            if (newPassword !== confirmNewPassword) {
+                alert('New passwords do not match!');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                alert('New password must be at least 6 characters long!');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+                    document.getElementById('changePasswordForm').reset();
+                    alert('Password changed successfully!');
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('An error occurred while changing password.');
             }
         }
 

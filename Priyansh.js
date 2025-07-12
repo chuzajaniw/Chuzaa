@@ -1,10 +1,11 @@
 const moment = require("moment-timezone");
 const { readdirSync, readFileSync, writeFileSync, existsSync, unlinkSync, rm } = require("fs-extra");
 const { join, resolve } = require("path");
-const { execSync } = require('child_process');
-const logger = require("./utils/log.js");
-const login = require("fca-priyansh"); 
+const { spawn } = require("child_process");
 const axios = require("axios");
+const logger = require("./utils/log");
+const fs = require("fs");
+const login = require("fca-priyansh"); 
 const listPackage = JSON.parse(readFileSync('./package.json')).dependencies;
 const listbuiltinModules = require("module").builtinModules;
 
@@ -74,7 +75,16 @@ global.language = new Object();
 var configValue;
 try {
     global.client.configPath = join(global.client.mainPath, "config.json");
-    configValue = require(global.client.configPath);
+    const configPath = process.env.CONFIG_PATH || "./config.json";
+    logger(`Found file config: ${configPath}`, "[ Priyansh ]");
+
+    let config;
+    try {
+        config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    } catch (error) {
+        logger(`Error loading config from ${configPath}: ${error.message}`, "[ ERROR ]");
+        process.exit(1);
+    }
     logger.loader("Found file config: config.json");
 }
 catch {
@@ -274,15 +284,15 @@ function onBot({ models: botModel }) {
         logger.loader(global.getText('priyansh', 'finishLoadModule', global.client.commands.size, global.client.events.size)) 
         logger.loader(`Bot ${process.env.BOT_ID || 'Default'} Startup Time: ${((Date.now() - global.client.timeStart) / 1000).toFixed()}s`)   
         logger.loader('===== [ ' + (Date.now() - global.client.timeStart) + 'ms ] =====')
-        
+
         // Use custom config path if provided
         const configPath = process.env.CONFIG_PATH || global.client['configPath'];
         writeFileSync(configPath, JSON['stringify'](global.config, null, 4), 'utf8') 
-        
+
         if (fs.existsSync(global['client']['configPath'] + '.temp')) {
             unlinkSync(global['client']['configPath'] + '.temp');
         }
-        
+
         const listenerData = {};
         listenerData.api = loginApiData; 
         listenerData.models = botModel;

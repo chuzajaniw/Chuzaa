@@ -250,6 +250,81 @@ app.delete('/api/bot/delete/:botId', requireAuth, (req, res) => {
     res.json({ success: true, message: 'Bot deleted successfully' });
 });
 
+app.post('/api/bot/start-all', requireAuth, (req, res) => {
+    const user = userDatabase.find(u => u.id === req.session.userId);
+    
+    if (!user || !user.bots) {
+        return res.json({ success: false, message: 'No bots found' });
+    }
+    
+    let startedCount = 0;
+    let errors = [];
+    
+    user.bots.forEach(bot => {
+        if (bot.status !== 'running') {
+            try {
+                startBot(bot, user.id);
+                startedCount++;
+            } catch (error) {
+                errors.push(`Failed to start ${bot.name}: ${error.message}`);
+            }
+        }
+    });
+    
+    res.json({ 
+        success: true, 
+        message: `Started ${startedCount} bots`, 
+        errors: errors.length > 0 ? errors : null 
+    });
+});
+
+app.post('/api/bot/stop-all', requireAuth, (req, res) => {
+    const user = userDatabase.find(u => u.id === req.session.userId);
+    
+    if (!user || !user.bots) {
+        return res.json({ success: false, message: 'No bots found' });
+    }
+    
+    let stoppedCount = 0;
+    
+    user.bots.forEach(bot => {
+        if (activeBots.has(bot.id)) {
+            const botProcess = activeBots.get(bot.id);
+            botProcess.kill();
+            activeBots.delete(bot.id);
+            bot.status = 'stopped';
+            bot.pid = null;
+            stoppedCount++;
+        }
+    });
+    
+    saveUserDatabase();
+    res.json({ success: true, message: `Stopped ${stoppedCount} bots` });
+});
+
+app.post('/api/change-password', requireAuth, async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    const user = userDatabase.find(u => u.id === req.session.userId);
+    
+    if (!user) {
+        return res.json({ success: false, message: 'User not found' });
+    }
+    
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+        return res.json({ success: false, message: 'Current password is incorrect' });
+    }
+    
+    if (newPassword.length < 6) {
+        return res.json({ success: false, message: 'New password must be at least 6 characters' });
+    }
+    
+    user.password = await bcrypt.hash(newPassword, 10);
+    saveUserDatabase();
+    
+    res.json({ success: true, message: 'Password changed successfully' });
+});
+
 app.get('/api/commands', (req, res) => {
     try {
         const commandsPath = path.join(__dirname, 'Priyansh', 'commands');
@@ -292,14 +367,15 @@ function startBot(botConfig, userId) {
         PREFIX: botConfig.prefix,
         ADMINBOT: [botConfig.adminId],
         APPSTATEPATH: botConfig.appstatePath,
-        BOTNAME: botConfig.name
+        BOTNAME: botConfig.name,
+        BOT_ID: botConfig.id
     };
     
     fs.writeFileSync(configPath, JSON.stringify(botSpecificConfig, null, 2));
     
     const child = spawn("node", ["--trace-warnings", "--async-stack-traces", "Priyansh.js"], {
         cwd: __dirname,
-        stdio: "inherit",
+        stdio: "pipe",
         shell: true,
         env: {
             ...process.env,
@@ -315,13 +391,23 @@ function startBot(botConfig, userId) {
     const bot = user?.bots?.find(b => b.id === botConfig.id);
     if (bot) {
         bot.status = 'running';
+        bot.pid = child.pid;
         saveUserDatabase();
     }
+    
+    child.stdout.on('data', (data) => {
+        logger(`Bot ${botConfig.name}: ${data}`, "[ BOT OUTPUT ]");
+    });
+    
+    child.stderr.on('data', (data) => {
+        logger(`Bot ${botConfig.name} Error: ${data}`, "[ BOT ERROR ]");
+    });
     
     child.on("close", (codeExit) => {
         activeBots.delete(botConfig.id);
         if (bot) {
             bot.status = 'stopped';
+            bot.pid = null;
             saveUserDatabase();
         }
         logger(`Bot ${botConfig.name} exited with code ${codeExit}`, "[ BOT ]");
@@ -331,6 +417,7 @@ function startBot(botConfig, userId) {
         activeBots.delete(botConfig.id);
         if (bot) {
             bot.status = 'error';
+            bot.pid = null;
             saveUserDatabase();
         }
         logger(`Bot ${botConfig.name} error: ${error.message}`, "[ BOT ERROR ]");
@@ -338,12 +425,50 @@ function startBot(botConfig, userId) {
 }
 
 // Start the server
-app.listen(port, '0.0.0.0', () => {
+const server = app.listen(port, '0.0.0.0', () => {
     logger(`Multi-Bot Management Server is running on port ${port}...`, "[ Starting ]");
+    logger(`Access your dashboard at: http://localhost:${port}`, "[ Info ]");
 }).on('error', (err) => {
     if (err.code === 'EACCES') {
         logger(`Permission denied. Cannot bind to port ${port}.`, "[ Error ]");
+    } else if (err.code === 'EADDRINUSE') {
+        logger(`Port ${port} is already in use. Trying alternate port...`, "[ Warning ]");
+        const alternatePort = port + 1;
+        app.listen(alternatePort, '0.0.0.0', () => {
+            logger(`Multi-Bot Management Server is running on alternate port ${alternatePort}...`, "[ Starting ]");
+        });
     } else {
         logger(`Server error: ${err.message}`, "[ Error ]");
     }
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    logger('SIGTERM received, shutting down gracefully...', "[ Shutdown ]");
+    
+    // Stop all running bots
+    activeBots.forEach((botProcess, botId) => {
+        logger(`Stopping bot ${botId}...`, "[ Shutdown ]");
+        botProcess.kill();
+    });
+    
+    server.close(() => {
+        logger('Server closed.', "[ Shutdown ]");
+        process.exit(0);
+    });
+});
+
+process.on('SIGINT', () => {
+    logger('SIGINT received, shutting down gracefully...', "[ Shutdown ]");
+    
+    // Stop all running bots
+    activeBots.forEach((botProcess, botId) => {
+        logger(`Stopping bot ${botId}...`, "[ Shutdown ]");
+        botProcess.kill();
+    });
+    
+    server.close(() => {
+        logger('Server closed.', "[ Shutdown ]");
+        process.exit(0);
+    });
 });
