@@ -1,0 +1,7 @@
+{
+  "welcomeEnabled": true,
+  "leaveEnabled": true,
+  "welcomeMessage": "✨ Welcome {userName} to {groupName}! ✨\n\n👤 You're member #{memberCount}\n🎉 Enjoy your stay!",
+  "leaveMessage": "👋 {userName} has left {groupName}\n\n📊 Members remaining: {memberCount}",
+  "autoDeleteTime": 60
+}

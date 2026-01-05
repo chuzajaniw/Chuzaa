@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect with Us</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            text-align: center;
+            width: 80%;
+            max-width: 800px;
+        }
+        .profile-photo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+            border: 5px solid;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .whatsapp-group {
+            background-color: #25D366; /* WhatsApp green */
+        }
+        .whatsapp-group:hover {
+            background-color: #1ebe5f;
+        }
+        .whatsapp-channel {
+            background-color: #128C7E; /* Different shade for channel */
+        }
+        .whatsapp-channel:hover {
+            background-color: #0f6f68;
+        }
+        .messenger {
+            background-color: #0084ff; /* Messenger blue */
+        }
+        .messenger:hover {
+            background-color: #007bb5;
+        }
+        .youtube {
+            background-color: #FF0000; /* YouTube red */
+        }
+        .youtube:hover {
+            background-color: #cc0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Profile photo with direct URL -->
+        <img id="profilePhoto" src="https://i.imgur.com/XLkshNB.jpeg" alt="Profile Photo" class="profile-photo">
+        
+        <h1>Connect with Us</h1>
+        <a href="https://chat.whatsapp.com" class="button whatsapp-group" target="_blank">Join our WhatsApp Group</a>
+        <a href="https://whatsapp.com" class="button whatsapp-channel" target="_blank">Follow our WhatsApp Channel</a>
+        <a href="https://m.me/" class="button messenger" target="_blank">Send us a Message on Messenger</a>
+    </div>
+    <a href="https://www.youtube.com" class="button youtube" target="_blank">Visit our YouTube Channel</a>
+    </div>
+
+    <script>
+        const profilePhoto = document.getElementById('profilePhoto');
+        const colors = ['#007bff', '#00d084', '#ff4081', '#7e57c2'];
+        let index = 0;
+
+        function changeBorderColor() {
+            profilePhoto.style.borderColor = colors[index];
+            index = (index + 1) % colors.length;
+        }
+
+        setInterval(changeBorderColor, 1000); // Change color every second
+    </script>
+</body>
+</html>

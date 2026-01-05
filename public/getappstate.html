@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appstate Getter</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="icon" type="image/x-icon" href="image/favicon.ico">
+  <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+  <style>
+    :root {
+      --darkbg: #000000;
+      --darkt: #ec1af6;
+      --lightbg: #fff;
+      --lightt: #000000;
+      --toggleHeight: 2.5em;
+      --toggleWidth: 5em;
+      --toggleBtnRadius: 2em;
+      --moonColor: #ffffff;
+      --sunColor: #ffffff;
+    }
+
+    body {
+      transition: all .2s ease-in-out;
+      background: var(--lightbg);
+      color: var(--lightt);
+      text-align: center;
+    }
+
+    .light {
+      background: var(--darkbgbg);
+      color: var(--darktt);
+    }
+
+   
+
+    .toggle.light {
+      background: var(--sunColor);
+    }
+
+    .toggle::before, .toggle::after {
+      content: '';
+      display: block;
+      border-radius: 50%;
+      width: 1em;
+      height: 1em;
+      transition: all 500ms ease-in-out;
+    }
+
+    .toggle::before {
+      background: #fff;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    .toggle.light::before {
+      background: #FFBF71;
+      box-shadow: none;
+    }
+
+    .toggle::after {
+      background: var(--moonColor);
+      box-shadow: -5px 0 0 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .toggle.light::after {
+      background: #FFD700;
+      box-shadow: 0 0 0 10px rgba(255, 223, 0, 0.5), 0 0 0 20px rgba(255, 223, 0, 0.2);
+    }
+
+    .toggle-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2em;
+    }
+
+    .form-group small a {
+      cursor: pointer;
+    }
+
+    .btn-block {
+      width: 100%;
+    }
+
+    .copy-button {
+      display: none;
+    }
+
+    .modal-content {
+      text-align: center;
+    }
+
+    /* Appstate result styling */
+    .appstate {
+      border: 2px solid #830f05; /* Border color */
+      border-radius: 0.5em; /* Rounded corners */
+      padding: 1em; /* Space inside the box */
+      background-color: #f8f9fa; /* Light background for contrast */
+      color: #000000; /* Text color */
+      overflow-x: auto; /* Horizontal scroll if content is too wide */
+      white-space: pre-wrap; /* Preserve whitespace formatting */
+      font-family: monospace; /* Monospace font for better readability */
+      max-height: 300px; /* Maximum height */
+      margin-top: 1em; /* Margin to separate from other elements */
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h3 class="text-center">Appstate Getter</h3>
+    <div class="form-group">
+      <input type="email" class="form-control" id="email" placeholder="Enter your Email/Uid/Number...">
+    </div>
+    <div class="form-group">
+      <input type="password" class="form-control" id="password" placeholder="Enter Your Password...">
+      <small><a onclick="showPass()">Show Password</a></small>
+    </div>
+    <button class="btn btn-success btn-block" onclick="getAppstate()">Get</button>
+    <div class="message mt-3" id="message"></div>
+    <pre class="appstate" id="appstate-result"></pre>
+    <button class="btn btn-primary copy-button mt-3" onclick="copyToClipboard()">Copy to Clipboard</button>
+    <a href="/" class="btn btn-secondary mt-3" style="background-color: darkred;">Back to Home!</a>
+  </div>
+
+  <div class="modal fade" id="copyModal" tabindex="-1" role="dialog" aria-labelledby="copyModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="copyModalLabel">Copied</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          Appstate copied to clipboard.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="test.js"></script>
+</body>
+
+</html>

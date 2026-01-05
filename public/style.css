@@ -1,81 +1,19 @@
-
-/* Custom styles for the multi-bot system */
-.glass-effect {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+/* VIP User Card Styling */
+.vip-user-card {
+    background: linear-gradient(45deg, #ffdd57, #ff9ff3, #feca57, #1dd1a1, #54a0ff, #5f27cd);
+    background-size: 400% 400%;
+    animation: vipGlow 6s ease infinite alternate;
+    border: 2px solid #FFD700; /* Gold border for VIP */
+    box-shadow: 0px 0px 20px rgba(255, 215, 0, 0.5); /* Gold glow effect */
 }
 
-.form-control-glass {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-}
-
-.form-control-glass::placeholder {
-    color: rgba(255, 255, 255, 0.7);
-}
-
-.form-control-glass:focus {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: #4ecdc4;
-    color: white;
-    box-shadow: 0 0 0 0.2rem rgba(78, 205, 196, 0.25);
-}
-
-.btn-gradient {
-    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-    border: none;
-    color: white;
-    font-weight: bold;
-}
-
-.btn-gradient:hover {
-    background: linear-gradient(45deg, #ff5252, #26a69a);
-    color: white;
-}
-
-.status-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    display: inline-block;
-    margin-right: 5px;
-}
-
-.status-running {
-    background-color: #28a745;
-}
-
-.status-stopped {
-    background-color: #dc3545;
-}
-
-.status-error {
-    background-color: #ffc107;
-}
-
-.bot-card-hover:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-}
-
-.command-badge {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 15px;
-    padding: 5px 10px;
-    margin: 2px;
-    display: inline-block;
-}
-
-@media (max-width: 768px) {
-    .sidebar {
-        position: relative;
-        min-height: auto;
+@keyframes vipGlow {
+    from {
+        border-color: #FFD700;
+        box-shadow: 0px 0px 10px rgba(255, 215, 0, 0.3);
     }
-    
-    .main-content {
-        padding: 10px;
+    to {
+        border-color: #FFA500;
+        box-shadow: 0px 0px 30px rgba(255, 165, 0, 0.6);
     }
 }
